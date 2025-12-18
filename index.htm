@@ -32,6 +32,28 @@
             overflow-x: hidden;
         }
 
+        /* Volume Control */
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        #volume-control:hover { background: rgba(0,0,0,0.8); transform: scale(1.1); }
+        .rich-theme #volume-control { background: rgba(255,255,255,0.5); color: #333; }
+
         /* Main Container */
         #game-container {
             width: 95%;
@@ -268,7 +290,6 @@
         .rich-theme #end-message strong { color: #3182ce; }
         .poor-theme #end-message strong { color: #e53e3e; text-decoration: underline; }
 
-        /* NEW: Stats Recorder Styles */
         .global-stats-container {
             margin-top: 40px;
             padding: 15px;
@@ -298,6 +319,8 @@
     </style>
 </head>
 <body>
+
+<div id="volume-control" onclick="sound.toggleMute()">🔊</div>
 
 <div id="game-container">
     <div class="content-layer">
@@ -381,6 +404,92 @@
 </div>
 
 <script>
+    /* =========================================
+       SOUND MANAGER (SFX Only - No Voice)
+       使用瀏覽器內建 Web Audio API
+       ========================================= */
+    class SoundManager {
+        constructor() {
+            this.muted = false;
+            this.audioCtx = null;
+        }
+
+        init() {
+            if (!this.audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.audioCtx = new AudioContext();
+            }
+        }
+
+        toggleMute() {
+            this.muted = !this.muted;
+            const btn = document.getElementById('volume-control');
+            btn.innerText = this.muted ? '🔇' : '🔊';
+            btn.style.opacity = this.muted ? 0.5 : 1;
+        }
+
+        // 產生合成音效 (Beep/Buzz)
+        playTone(type, isRich) {
+            if (this.muted || !this.audioCtx) return;
+            if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+
+            const osc = this.audioCtx.createOscillator();
+            const gainNode = this.audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(this.audioCtx.destination);
+
+            const now = this.audioCtx.currentTime;
+
+            if (type === 'click') {
+                // UI Click
+                if (isRich) {
+                    osc.type = 'sine'; // 清脆
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                } else {
+                    osc.type = 'square'; // 粗糙
+                    osc.frequency.setValueAtTime(150, now);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                }
+            } else if (type === 'good') {
+                // Success / Money
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.setValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'bad') {
+                // Fail / Lose Money
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'start') {
+                // Game Start Sound
+                osc.type = isRich ? 'sine' : 'sawtooth';
+                osc.frequency.setValueAtTime(isRich ? 440 : 100, now);
+                osc.frequency.exponentialRampToValueAtTime(isRich ? 880 : 50, now + 1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 1);
+                osc.start(now); osc.stop(now + 1);
+            }
+        }
+    }
+
+    const sound = new SoundManager();
+
+    // ==========================================
+    // GAME LOGIC
+    // ==========================================
+
     let state = { isRich: false, age: 5, money: 0, socialScore: 0, history: [] };
     
     // --- GLOBAL STATS LOGIC ---
@@ -416,7 +525,6 @@
     // Initialize display on load
     updateStatsDisplay();
 
-    // CONFIG: Massive Rich Buff
     const CONFIG = {
         rich: { startMoney: 5000000, moneyMultiplier: 5, baseLuck: 0.8 },
         poor: { startMoney: 0, moneyMultiplier: 0.8, baseLuck: 0.15 }
@@ -628,6 +736,9 @@
 
     // --- NEW: MIDDLE CLASS TRIGGER ---
     function triggerMiddleEnding() {
+        sound.init(); // Initialize audio
+        sound.playTone('bad', false);
+
         document.getElementById('start-screen').classList.add('hidden');
         document.body.style.backgroundColor = "#2d3748"; 
         
@@ -658,6 +769,9 @@
     // --- CORE GAME FUNCTIONS ---
 
     function startGame(isRich) {
+        sound.init(); // Init Audio Context
+        sound.playTone('start', isRich); // Start SFX
+
         // Record Attempt
         if(isRich) globalStats.richPlay++;
         else globalStats.poorPlay++;
@@ -724,6 +838,8 @@
     }
 
     function handleChoice(event, opt) {
+        sound.playTone('click', state.isRich); // Click SFX
+
         const oldMoney = state.money;
         const oldScore = state.socialScore;
 
@@ -738,6 +854,7 @@
             state.money = 1000000; 
             addToLog("⚠️ 警告：資金轉負。家族辦公室已緊急介入，填補赤字並注入備用金。", "good");
             triggerAnimation('stat-money', 'flash-green');
+            sound.playTone('good', true);
         }
 
         updateStatsUI(oldMoney, oldScore);
@@ -766,6 +883,10 @@
             else { score = 30; msg = "聽力測驗像是外星語。"; type = "bad"; }
             state.socialScore += (score === 100 ? 5 : -5);
         }
+        
+        if(type === 'good') sound.playTone('good', state.isRich);
+        if(type === 'bad') sound.playTone('bad', state.isRich);
+        
         addToLog(`英文考試結果：${score}分。 ${msg}`, type);
     }
 
@@ -790,10 +911,16 @@
              if (resultConfig.score < 0 || resultConfig.money < -50000) type = "bad";
         }
         
+        // Play Result Sound
+        if (type === 'good') sound.playTone('good', state.isRich);
+        if (type === 'bad') sound.playTone('bad', state.isRich);
+
         addToLog(msg, type);
     }
 
     function showEnding() {
+        sound.playTone('start', state.isRich); // End tone
+
         const gameScreen = document.getElementById('game-screen');
         const endScreen = document.getElementById('end-screen');
         
@@ -830,6 +957,7 @@
                 }
             }
             endMsg.innerHTML = html;
+
         }, 500);
     }
 </script>
