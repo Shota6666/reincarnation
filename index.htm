@@ -965,7 +965,7 @@
                 html += `<p>你的一生都在「選擇」中度過，而你總是有很多選擇。</p><p>即使犯錯，家族也會為你買單。</p><p><strong>你的孩子將繼續站在金字塔頂端，俯瞰眾生。</strong></p>`;
             } else {
                 // The "Legendary" Poor Ending check
-                if (state.socialScore >= 60 && state.money > 1000000) {
+                if (state.socialScore >= 30 && state.money > 1000000) {
                      globalStats.poorWin++;
                      saveStats();
 
