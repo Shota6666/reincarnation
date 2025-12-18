@@ -530,7 +530,7 @@
         poor: { startMoney: 0, moneyMultiplier: 0.8, baseLuck: 0.15 }
     };
 
-    const EVENTS = [
+   const EVENTS = [
         {
             age: 5, title: "童年的玩具", description: "5歲了，你看著櫥窗裡的最新款機器人，非常想要。",
             richDesc: "這點小錢對家裡根本不是錢。",
@@ -582,7 +582,8 @@
                 { text: "購買頂級實驗設備", result: { msg: "設備太高級，你隨便弄弄數據都很漂亮。獲得優等。", score: 10, money: -30000 } }
             ],
             poorOptions: [
-                { text: "用回收材料硬做", result: { chance: 0.05, success: "評審被你的創意感動，給了佳作（但這種機率極低）。", fail: "你的紙箱機器人在展示時垮掉了，旁邊富家子弟的無人機正在編隊飛行。你感到無地自容。", score: -5, money: -500 } },
+                // 修改：機率提升至 25%，成功獎金 5000
+                { text: "用回收材料硬做", result: { chance: 0.25, success: "評審被你的創意感動，獲得全國特優！還有小額獎金。", fail: "你的紙箱機器人在展示時垮掉了，旁邊富家子弟的無人機正在編隊飛行。你感到無地自容。", score: 10, successMoney: 5000, failMoney: -500 } },
                 { text: "隨便做個靜態海報", result: { msg: "反正也不會得獎，不如省下買材料的錢。", score: -2, money: 0 } }
             ]
         },
@@ -611,8 +612,9 @@
                 { text: "Gap Year 環遊世界", result: { msg: "尋找自我，體驗人生。", score: 10, money: -500000 } }
             ],
             poorOptions: [
-                { text: "拼命苦讀考國立", result: { chance: 0.1, success: "奇蹟發生！考上了國立大學，但學貸沉重。", fail: "落榜了。只能去讀學店。", score: 5, money: -50000 } },
-                { text: "直接就業", result: { msg: "去工廠輪班，放棄升學。", score: -5, money: 5000 } }
+                // 修改：機率提升至 40%，成功獎金 20000 (獎學金)
+                { text: "拼命苦讀考國立", result: { chance: 0.40, success: "奇蹟發生！考上了頂尖國立大學，還拿到了清寒獎學金。", fail: "落榜了。只能去讀學店，背負沉重學貸。", score: 15, successMoney: 20000, failMoney: -50000 } },
+                { text: "直接就業", result: { msg: "去工廠輪班，放棄升學，但也沒欠債。", score: -5, money: 5000 } }
             ]
         },
         {
@@ -626,7 +628,8 @@
             ],
             poorOptions: [
                 { text: "隨便找份工作", result: { msg: "起薪28K，責任制不給加班費。", score: 0, money: 28000 } },
-                { text: "考公務員(全職考生)", result: { chance: 0.05, success: "考了三年終於上榜，鐵飯碗。", fail: "落榜多次，變成家裡蹲。", score: 5, money: -30000 } }
+                // 修改：機率提升至 25%
+                { text: "考公務員(全職考生)", result: { chance: 0.25, success: "考了三年終於上榜，鐵飯碗到手。", fail: "落榜多次，變成家裡蹲，積蓄耗盡。", score: 10, successMoney: 10000, failMoney: -30000 } }
             ]
         },
         {
@@ -639,7 +642,8 @@
                 { text: "天使投資新創", result: { chance: 0.8, success: "壓對寶了，百倍回收。", fail: "新創倒閉，但這點錢無所謂。", score: 25, money: 10000000 } }
             ],
             poorOptions: [
-                { text: "玩高槓桿合約", result: { chance: 0.05, success: "運氣爆棚，賺了一年薪水。", fail: "爆倉了，積蓄歸零。", score: -10, money: -100000 } },
+                // 修改：機率提升至 20%，這是唯一的暴富機會！增加 successMoney 150萬
+                { text: "玩高槓桿合約 (All in)", result: { chance: 0.20, success: "運氣爆棚！抓到百倍幣，資產瞬間暴增！(階級翻轉關鍵)", fail: "爆倉了，積蓄歸零，人生跌入谷底。", score: 30, successMoney: 1500000, failMoney: -100000 } },
                 { text: "定存", result: { msg: "利息趕不上通膨，越存越窮。", score: -2, money: 1000 } }
             ]
         },
@@ -654,7 +658,8 @@
             ],
             poorOptions: [
                 { text: "租房結婚", result: { msg: "房東年年漲租，常常搬家，不敢生小孩。", score: -5, money: -10000 } },
-                { text: "買偏遠老屋", result: { chance: 0.1, success: "終於有家了，但通勤要兩小時。", fail: "背房貸背到懷疑人生，生活品質歸零。", score: 0, money: -30000 } }
+                // 修改：機率提升至 40%
+                { text: "買偏遠老屋", result: { chance: 0.40, success: "終於有家了，雖然遠了點，但房價這幾年也漲了一些。", fail: "買到漏水海砂屋，修繕費用是個無底洞。", score: 10, successMoney: 50000, failMoney: -50000 } }
             ]
         },
         {
@@ -667,7 +672,8 @@
                 { text: "退休享受生活", result: { msg: "反正錢花不完。", score: 20, money: 0 } }
             ],
             poorOptions: [
-                { text: "跪求不裁員", result: { chance: 0.2, success: "留下來了，但被減薪且工作加倍。", fail: "還是被資遣了，中年失業。", score: -20, money: -50000 } },
+                // 修改：機率提升至 50%
+                { text: "跪求不裁員", result: { chance: 0.50, success: "憑著老資歷留下來了，雖然很累但保住了收入。", fail: "還是被資遣了，中年失業。", score: 5, successMoney: 20000, failMoney: -50000 } },
                 { text: "跑外送/開Uber", result: { msg: "用時間換金錢，身體快速垮掉。", score: -10, money: 30000 } }
             ]
         },
@@ -681,7 +687,8 @@
                 { text: "換器官/幹細胞", result: { msg: "透過管道優先獲得資源，重獲新生。", score: 15, money: -3000000 } }
             ],
             poorOptions: [
-                { text: "排健保病房", result: { chance: 0.3, success: "等了很久終於排到，勉強控制病情。", fail: "等到病情惡化都還沒排到...", score: -20, money: -20000 } },
+                // 修改：機率提升至 60%
+                { text: "排健保病房", result: { chance: 0.60, success: "運氣好排到了名醫，病情獲得控制。", fail: "等到病情惡化都還沒排到...醫藥費耗盡家產。", score: 0, successMoney: 0, failMoney: -200000 } },
                 { text: "放棄治療", result: { msg: "不想拖累家人，選擇回家療養。", score: -30, money: 0 } }
             ]
         },
@@ -894,21 +901,35 @@
         let success = true;
         let msg = resultConfig.msg;
         let type = "neutral";
+        
+        // 用來計算這次事件的金錢變動
+        let currentMoneyChange = resultConfig.money || 0;
 
         if (resultConfig.chance !== undefined) {
             if (Math.random() > resultConfig.chance) {
-                success = false; msg = resultConfig.fail; type = "bad";
+                // 失敗的情況
+                success = false; 
+                msg = resultConfig.fail; 
+                type = "bad";
+                // 如果有設定失敗要扣的錢 (例如 failMoney: -50000)
+                if (resultConfig.failMoney) currentMoneyChange = resultConfig.failMoney;
             } else {
-                msg = resultConfig.success; type = "good";
+                // 成功的情況
+                msg = resultConfig.success; 
+                type = "good";
+                // 如果有設定成功獲得的錢 (例如 successMoney: 1000000)
+                if (resultConfig.successMoney) currentMoneyChange = resultConfig.successMoney;
             }
         }
 
         if (resultConfig.score) state.socialScore += resultConfig.score;
-        if (resultConfig.money) state.money += resultConfig.money;
+        
+        // 應用金錢變動
+        state.money += currentMoneyChange;
         
         if (!resultConfig.chance) {
-             if ((resultConfig.score > 0 || resultConfig.money > 0) && resultConfig.money > -50000) type = "good";
-             if (resultConfig.score < 0 || resultConfig.money < -50000) type = "bad";
+             if ((resultConfig.score > 0 || currentMoneyChange > 0) && currentMoneyChange > -50000) type = "good";
+             if (resultConfig.score < 0 || currentMoneyChange < -50000) type = "bad";
         }
         
         // Play Result Sound
